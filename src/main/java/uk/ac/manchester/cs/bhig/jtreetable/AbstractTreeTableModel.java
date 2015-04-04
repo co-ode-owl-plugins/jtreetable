@@ -1,17 +1,5 @@
 package uk.ac.manchester.cs.bhig.jtreetable;
 
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.*;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.event.TableModelEvent;
-import java.util.*;
 /*
 * Copyright (C) 2007, University of Manchester
 *
@@ -34,6 +22,20 @@ import java.util.*;
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JTree;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 /**
  * Author: drummond<br>
@@ -47,11 +49,11 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
 
     private JTree tree;
 
-    private java.util.List<TableModelListener> listeners = new ArrayList<TableModelListener>();
+    private java.util.List<TableModelListener> listeners = new ArrayList<>();
 
     private TableColumnModel columnModel = new DefaultTableColumnModel();
 
-    private Map<Object, Integer> colIndex = new HashMap<Object, Integer>();
+    private Map<Object, Integer> colIndex = new HashMap<>();
 
     // easier to find errors if the indices never match up with the layout
     private int nextColumnModelIndex = 100;
@@ -62,9 +64,11 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     public AbstractTreeTableModel(JTree tree) {
         this.tree = tree;
         tree.addTreeExpansionListener(new TreeExpansionListener(){
+            @Override
             public void treeExpanded(TreeExpansionEvent event) {
                 notifyTreeExpanded(event);
             }
+            @Override
             public void treeCollapsed(TreeExpansionEvent event) {
                 notifyTreeCollapsed(event);
             }
@@ -72,6 +76,7 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     }
 
 
+    @Override
     public boolean addColumn(Object o) {
         final int modelIndex = nextColumnModelIndex++;
         if (!colIndex.containsKey(o)){
@@ -86,12 +91,13 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     }
 
 
+    @Override
     public void removeColumn(Object o) {
         int modelIndex = colIndex.get(o);
         colIndex.remove(o);
 
-        for (Enumeration it = columnModel.getColumns(); it.hasMoreElements();){
-            TableColumn tc = (TableColumn)it.nextElement();
+        for (Enumeration<TableColumn> it = columnModel.getColumns(); it.hasMoreElements();){
+            TableColumn tc = it.nextElement();
             if (tc.getModelIndex() == modelIndex){
                 columnModel.removeColumn(tc);
             }
@@ -99,11 +105,13 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     }
 
 
+    @Override
     public Set getColumns() {
         return colIndex.keySet();
     }
 
 
+    @Override
     public Object getColumnObjectAtModelIndex(int index) {
         for (Object o : colIndex.keySet()){
             if (colIndex.get(o) == index){
@@ -120,6 +128,7 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     }
 
 
+    @Override
     public int getModelIndexOfColumn(Object o) {
         Integer index = colIndex.get(o);
         if (index == null){
@@ -129,73 +138,87 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     }
 
 
+    @Override
     public int getColumnCount() {
         return columnModel.getColumnCount();
     }
 
 
+    @Override
     public String getColumnName(int i) {
         return getColumnObjectAtModelIndex(i).toString();
     }
 
 
+    @Override
     public Class<?> getColumnClass(int i) {
         return getColumnObjectAtModelIndex(i).getClass();
     }
 
 
+    @Override
     public final boolean isCellEditable(int row, int col) {
         return isCellEditable(getNodeForRow(row), col);
     }
 
 
+    @Override
     public final int getRowCount() {
         return tree.getRowCount();
     }
 
 
+    @Override
     public final Object getValueAt(int row, int col) {
         return getValueAt(getNodeForRow(row), col);
     }
 
 
+    @Override
     public final void setValueAt(Object value, int row, int col) {
         setValueAt(value, getNodeForRow(row), col);
     }
 
 
+    @Override
     public T getNodeForRow(int row) {
         return (T)tree.getPathForRow(row).getLastPathComponent();
     }
 
 
+    @Override
     public TableColumnModel getColumnModel() {
         return columnModel;
     }
 
 
+    @Override
     public boolean isCellEditable(T node, int col){
         return true;
     }
 
 
+    @Override
     public abstract void setValueAt(Object value, T node, int column);
 
 
+    @Override
     public abstract Object getValueAt(T node, int column);
 
 
+    @Override
     public final void addTableModelListener(TableModelListener l) {
         listeners.add(l);
     }
 
 
+    @Override
     public final void removeTableModelListener(TableModelListener l) {
         listeners.remove(l);
     }
 
 
-    private void notifyTreeExpanded(TreeExpansionEvent event) {
+    protected void notifyTreeExpanded(TreeExpansionEvent event) {
         int startrow = tree.getRowForPath(event.getPath())+1;
         int endRow = startrow + getDiff();//getLastExpandedRow(event.getPath());
         TableModelEvent tableDataEvent = new TableModelEvent(AbstractTreeTableModel.this,
@@ -208,7 +231,7 @@ public abstract class AbstractTreeTableModel<T> implements TreeTableModel<T> {
     }
 
 
-    private void notifyTreeCollapsed(TreeExpansionEvent event) {
+    protected void notifyTreeCollapsed(TreeExpansionEvent event) {
         int startrow = tree.getRowForPath(event.getPath())+1;
         int endRow = startrow + getDiff();
 

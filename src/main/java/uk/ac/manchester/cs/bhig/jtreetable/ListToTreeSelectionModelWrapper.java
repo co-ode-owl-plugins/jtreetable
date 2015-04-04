@@ -1,10 +1,5 @@
 package uk.ac.manchester.cs.bhig.jtreetable;
 
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.TreePath;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.*;
 /*
 * Copyright (C) 2007, University of Manchester
 *
@@ -27,6 +22,12 @@ import javax.swing.*;
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.tree.DefaultTreeSelectionModel;
+import javax.swing.tree.TreePath;
 
 /**
  * Author: drummond<br>
@@ -42,7 +43,7 @@ import javax.swing.*;
  * in the DefaultTreeSelectionModel.
  */
 public class ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel {
-
+    private static final long serialVersionUID = 1L;
     /**
      * Set to true when we are updating the ListSelectionModel.
      */
@@ -55,6 +56,7 @@ public class ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel {
         super();
         this.tree = tree;
         listSelectionModel.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()){
                     updateSelectedPathsFromSelectedRows();
@@ -79,6 +81,7 @@ public class ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel {
      * and message super. This is the only place DefaultTreeSelectionModel
      * alters the ListSelectionModel.
      */
+    @Override
     public void resetRowSelection() {
         if (!updatingListSelectionModel) {
             updatingListSelectionModel = true;

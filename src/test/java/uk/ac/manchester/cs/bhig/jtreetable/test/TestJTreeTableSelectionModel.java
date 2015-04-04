@@ -1,10 +1,10 @@
 package uk.ac.manchester.cs.bhig.jtreetable.test;
 
-import uk.ac.manchester.cs.bhig.jtreetable.JTreeTable;
-import uk.ac.manchester.cs.bhig.jtreetable.ListToTreeSelectionModelWrapper;
-
-import javax.swing.*;
-import javax.swing.tree.TreeModel;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 /*
@@ -29,6 +29,9 @@ import javax.swing.tree.DefaultTreeModel;
 * License along with this library; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+import javax.swing.tree.TreeModel;
+
+import uk.ac.manchester.cs.bhig.jtreetable.ListToTreeSelectionModelWrapper;
 
 /**
  * Author: drummond<br>

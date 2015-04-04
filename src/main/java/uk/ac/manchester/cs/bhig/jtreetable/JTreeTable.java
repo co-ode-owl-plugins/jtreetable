@@ -1,15 +1,13 @@
 package uk.ac.manchester.cs.bhig.jtreetable;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.Border;
-import javax.swing.event.*;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.AdjustmentListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Arrays;
@@ -36,6 +34,22 @@ import java.util.Arrays;
 * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
+
 /**
  * Author: drummond<br>
  * http://www.cs.man.ac.uk/~drummond/<br><br>
@@ -46,18 +60,20 @@ import java.util.Arrays;
  */
 public class JTreeTable<R> extends JComponent {
 
-    private final JTree tree;
+    private static final long serialVersionUID = 1L;
 
-    private JTable table;
+    protected final JTree tree;
+
+    protected JTable table;
 
     private String treeTitle = "tree";
 
-    private JScrollPane treeScrollPane;
-    private JScrollPane tableScrollPane;
+    protected JScrollPane treeScrollPane;
+    protected JScrollPane tableScrollPane;
 
     private TreeTableModel<R> model;
 
-    private CellEditorFactory editorFactory = null;
+    protected CellEditorFactory editorFactory = null;
 
     public JTreeTable(JTree tree, TreeTableModel<R> model) {
         this.tree = tree;
@@ -74,6 +90,7 @@ public class JTreeTable<R> extends JComponent {
         tree.setSelectionModel(selectionWrapper);
         table.setSelectionModel(selectionWrapper.getListSelectionModel());
         selectionWrapper.addTreeSelectionListener(new TreeSelectionListener(){
+            @Override
             public void valueChanged(TreeSelectionEvent event) {
                 JTreeTable.this.tree.scrollPathToVisible(event.getPath());
                 syncScrollers(treeScrollPane, tableScrollPane);
@@ -86,15 +103,17 @@ public class JTreeTable<R> extends JComponent {
 
         tableScrollPane = new JScrollPane(table);
         tableScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-        tableScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        tableScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         // sync the 2 scrollpanes in the vertical axis
         tableScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener(){
+            @Override
             public void adjustmentValueChanged(AdjustmentEvent event) {
                 syncScrollers(tableScrollPane, treeScrollPane);
             }
         });
         treeScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener(){
+            @Override
             public void adjustmentValueChanged(AdjustmentEvent event) {
                 syncScrollers(treeScrollPane, tableScrollPane);
             }
@@ -112,12 +131,13 @@ public class JTreeTable<R> extends JComponent {
     }
 
 
-    private void syncScrollers(JScrollPane source, JScrollPane target) {
+    protected void syncScrollers(JScrollPane source, JScrollPane target) {
         int y = source.getViewport().getViewPosition().y;
         target.getViewport().setViewPosition(new Point(target.getViewport().getViewPosition().x, y));
     }
 
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         tree.setFont(font);
@@ -164,6 +184,7 @@ public class JTreeTable<R> extends JComponent {
 
         // keep width of column 100%
         treeHeader.addComponentListener(new ComponentAdapter(){
+            @Override
             public void componentResized(ComponentEvent event) {
                 tc.setWidth(event.getComponent().getSize().width);
             }
@@ -176,7 +197,7 @@ public class JTreeTable<R> extends JComponent {
         Border scrollPaneBorder = treeScrollPane.getBorder(); // we'll use this outside
         treeScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
 //        treeScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        treeScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        treeScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         JComponent treeHolder = new JPanel(new BorderLayout());
         treeHolder.setBorder(scrollPaneBorder); // reused the border
@@ -194,11 +215,12 @@ public class JTreeTable<R> extends JComponent {
     // table that ensures row heights are always the same as the tree row heights
     // could be optimised if we know the cell heights are always the same
     class VariableHeightCellsTable extends JTable {
-
+        private static final long serialVersionUID = 1L;
         VariableHeightCellsTable(TreeTableModel tableModel) {
             super(tableModel, tableModel.getColumnModel());
         }
 
+        @Override
         public int getRowHeight(int row) {
             final int treeRowHeight = tree.getRowHeight();
             if (treeRowHeight < 0){ // then tree gets its height from the renderer
@@ -219,6 +241,7 @@ public class JTreeTable<R> extends JComponent {
             return super.getRowHeight(row);
         }
 
+        @Override
         public int getRowHeight() {
             final int treeRowHeight = tree.getRowHeight();
             if (treeRowHeight < 0){ // then tree gets its height from the renderer
@@ -229,6 +252,7 @@ public class JTreeTable<R> extends JComponent {
 
 
         // rowAtPoint doesn't appear to calculate correctly with custom heights, so do it by hand
+        @Override
         public int rowAtPoint(Point point) {
             int rowYPos = 0; int row = -1;
             while (row < getRowCount() && rowYPos < point.y){
@@ -242,6 +266,7 @@ public class JTreeTable<R> extends JComponent {
         }
 
 
+        @Override
         public TableCellEditor getCellEditor(int row, int col) {
             int modelIndex = table.convertColumnIndexToModel(col);
             if (editorFactory != null){
